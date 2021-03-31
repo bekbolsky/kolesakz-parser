@@ -1,2 +1,5 @@
-.vscode
-env
+*
+
+!.gitignore
+!requirements.txt
+!parser.py
