@@ -1,21 +1,23 @@
 # kolesakz-parser
+
 Парсер грузовых автомобилей с kolesa.kz, с выгрузкой данных в формате csv
+
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+![GitHub](https://img.shields.io/github/license/bekbolsky/kolesakz-parser)
 
 ## Установка
 
-Используйте пакетный менеджер `pip` 
+Используйте пакетный менеджер `pip`
 
 ```sh
 python3 -m pip install -r requirements.txt
 ```
-
 
 ## Запуск
 
 ```sh
 python3 parser.py
 ```
-
 
 ## Пример выгружаемых данных
 
@@ -29,7 +31,7 @@ python3 parser.py
 - engine_volume - Объем двигателя
 - vehicle_type - Тип техники
 
-*Если какая-то информация в объявлении не указана, то она будет пропущена и при выгрузке*
+_Если какая-то информация в объявлении не указана, то она будет пропущена и при выгрузке_
 
 | vehicle                 | year    | price    | emergency  | fuel_type | engine_volume | vehicle_type |
 | ----------------------- | ------- | -------- | ---------- | --------- | ------------- | ------------ |
@@ -40,6 +42,6 @@ python3 parser.py
 | MAN                     | 1997 г. | 7000000  | с пробегом | дизель    |               | тягач        |
 | Mercedes-Benz Варио 814 | 2000 г. | 5500000  | с пробегом | дизель    | 4.3 л         | фургон       |
 
-
 ## Лицензия
+
 [MIT](https://choosealicense.com/licenses/mit/)
