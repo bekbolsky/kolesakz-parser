@@ -3,13 +3,14 @@
 import csv
 import re
 import time
+from multiprocessing import Pool
 from random import uniform
 from typing import List, Tuple
 
 import requests
 from bs4 import BeautifulSoup
 from bs4.element import ResultSet, Tag
-from tqdm import trange
+from tqdm import tqdm
 
 BASE_URL = "https://kolesa.kz"
 URL = f"{BASE_URL}/spectehnika/gruzoviki/"
@@ -17,7 +18,7 @@ HEADERS = {
     "accept": "*/*",
     "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
     " AppleWebKit/537.36 (KHTML, like Gecko) "
-    "Chrome/89.0.4389.90 Safari/537.36",
+    "Chrome/89.0.4389.114 Safari/537.36",
 }
 
 
@@ -34,8 +35,11 @@ def get_html(url: str) -> str:
         [str]: HTML page from the request
     """
     response = requests.get(url, headers=HEADERS)
-    html = response.text
-    return html
+    if response.status_code == requests.codes.ok:
+        html = response.text
+        return html
+    else:
+        print("Error. Page is unreachable")
 
 
 def pages_count(html: str) -> int:
@@ -150,7 +154,33 @@ def save_data(filename, data: List) -> None:
         filename ([type]): имя файла
         data (List): список со всеми спарсенными данными
     """
-    with open(filename, "wt", encoding="utf-8") as csv_file:
+    with open(filename, "a", encoding="utf-8") as csv_file:
+        writer = csv.writer(csv_file)
+        for row in data:
+            writer.writerow(row)
+
+
+def get_all_pages(last_page: int) -> List[str]:
+    pages = []
+    for i in range(1, last_page + 1):
+        pages.append(f"{URL}?page={i}")
+    return pages
+
+
+def page_parse(page: str):
+    html = get_html(page)
+    soup = BeautifulSoup(html, "lxml")
+    ads_list = soup.find_all("div", {"class": "a-elem"})
+    data = collect_data(ads_list)
+    save_data("parsed_data.csv", data)
+    # устанавливаем рандомное значение секунды из диапазона
+    rand_sec = round(uniform(1.25, 5), 2)
+    # паузим выполнение на рандомную секунду
+    time.sleep(rand_sec)
+
+
+def main():
+    with open("parsed_data.csv", "wt", encoding="utf-8") as csv_file:
         writer = csv.writer(csv_file)
         writer.writerow(
             (
@@ -163,28 +193,18 @@ def save_data(filename, data: List) -> None:
                 "vehicle_type",
             )
         )
-
-        for row in data:
-            writer.writerow(row)
-
-
-def main():
     last_page = pages_count(get_html(URL))
+    # last_page = 50
+    all_pages = get_all_pages(last_page)
 
-    data_collection = []
-    # цикл с визуальной шкалой прогресса
-    for i in trange(1, last_page + 1, desc="Progress"):
-        html = get_html(f"{URL}?page={i}")
-        soup = BeautifulSoup(html, "lxml")
-        ads_list = soup.find_all("div", {"class": "a-elem"})
-        data = collect_data(ads_list)
-        data_collection.extend(data)
-        # устанавливаем рандомное значение секунды из диапазона
-        rand_sec = round(uniform(0.4, 2.5), 2)
-        # паузим выполнение на рандомную секунду
-        time.sleep(rand_sec)
-
-    save_data("pretty_data.csv", data_collection)
+    with Pool(10) as p:
+        list(
+            tqdm(
+                p.imap_unordered(page_parse, all_pages),
+                total=len(all_pages),
+                desc="Progress",
+            )
+        )
 
 
 if __name__ == "__main__":
