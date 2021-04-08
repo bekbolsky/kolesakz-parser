@@ -2,16 +2,14 @@
 
 import csv
 import re
-from random import uniform
 import time
+from random import uniform
 from typing import List, Tuple
-
 
 import requests
 from bs4 import BeautifulSoup
 from bs4.element import ResultSet, Tag
 from tqdm import trange
-
 
 BASE_URL = "https://kolesa.kz"
 URL = f"{BASE_URL}/spectehnika/gruzoviki/"
